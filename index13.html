@@ -3,8 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Model Viewer</title>
+    <title>Auto-Fitting 3D Model Viewer</title>
+
+    <link rel="modulepreload" href="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js">
+    <link rel="preload" href="model13.glb" as="fetch" crossorigin="anonymous">
+
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+
     <style>
         body, html { 
             margin: 0; 
@@ -20,18 +25,36 @@
             --background-color: transparent; 
             background-color: transparent;
             --interaction-prompt-display: none;
+            --poster-color: transparent;
         }
 
         model-viewer::part(interaction-prompt) {
             display: none !important;
         }
+
+        #progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background-color: #000;
+            opacity: 0.6;
+            transition: width 0.15s ease, opacity 0.4s ease;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
 
+    <div id="progress-bar"></div>
+
     <model-viewer 
         id="viewer"
         src="model13.glb"
+        loading="eager"
+        reveal="auto"
+        render-scale="1"
         camera-controls 
         touch-action="pan-y" 
         shadow-intensity="1"
@@ -41,10 +64,14 @@
         auto-rotate 
         auto-rotate-delay="0"
         rotation-per-second="15deg"
-        camera-orbit="0deg 75deg auto"
+        
+        /* --- AUTO-SCALING & AUTO-FRAMING PROPERTIES --- */
         camera-target="auto auto auto"
-        min-camera-orbit="-infinity 45deg auto"
-        max-camera-orbit="infinity 90deg auto"
+        camera-orbit="0deg 75deg 100%"
+        field-of-view="auto"
+        
+        min-camera-orbit="-infinity 45deg 100%"
+        max-camera-orbit="infinity 90deg 100%"
         interpolation-decay="200"
         disable-pan
         disable-tap
@@ -53,8 +80,10 @@
 
     <script>
         const modelViewer = document.querySelector('#viewer');
-        const defaultOrbit = "0deg 75deg auto";
+        const progressBar = document.querySelector('#progress-bar');
         
+        // Match the 100% radius so auto-reset maintains tight framing
+        const defaultOrbit = "0deg 75deg 100%";
         const RESET_DELAY_MS = 1000; 
 
         let resetTimer = null;
@@ -62,7 +91,14 @@
         let startX = 0;
         let startY = 0;
 
-        // Prevent static clicks/taps from refocusing or shifting the camera target
+        modelViewer.addEventListener('progress', (e) => {
+            const progress = e.detail.totalProgress * 100;
+            progressBar.style.width = `${progress}%`;
+            if (progress === 100) {
+                setTimeout(() => { progressBar.style.opacity = '0'; }, 300);
+            }
+        });
+
         modelViewer.addEventListener('pointerdown', (e) => {
             isInteracting = true;
             startX = e.clientX;
@@ -70,26 +106,21 @@
             clearTimeout(resetTimer);
         });
 
-        // Intercept clicks before <model-viewer> reads them
         modelViewer.addEventListener('click', (e) => {
             const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
-            // If mouse moved less than 5px (a click, not a drag), block the event entirely
             if (dist < 5) {
                 e.stopPropagation();
                 e.preventDefault();
             }
-        }, true); // 'true' uses capture mode to stop the event early
+        }, true);
 
-        // Trigger 1-second countdown when user releases from dragging
         function handleUserRelease() {
             isInteracting = false;
             clearTimeout(resetTimer);
 
             resetTimer = setTimeout(() => {
                 if (isInteracting) return;
-
                 modelViewer.cameraOrbit = defaultOrbit;
-
             }, RESET_DELAY_MS);
         }
 
