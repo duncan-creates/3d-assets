@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Auto-Fitting 3D Model Viewer</title>
+    <title>Auto-Framing 3D Model Viewer</title>
 
     <link rel="modulepreload" href="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js">
     <link rel="preload" href="model13.glb" as="fetch" crossorigin="anonymous">
@@ -55,6 +55,7 @@
         loading="eager"
         reveal="auto"
         render-scale="1"
+        bounds="tight"
         camera-controls 
         touch-action="pan-y" 
         shadow-intensity="1"
@@ -65,13 +66,12 @@
         auto-rotate-delay="0"
         rotation-per-second="15deg"
         
-        /* --- AUTO-SCALING & AUTO-FRAMING PROPERTIES --- */
+        /* Let the camera set target automatically */
         camera-target="auto auto auto"
-        camera-orbit="0deg 75deg 100%"
-        field-of-view="auto"
+        camera-orbit="0deg 75deg auto"
         
-        min-camera-orbit="-infinity 45deg 100%"
-        max-camera-orbit="infinity 90deg 100%"
+        min-camera-orbit="-infinity 45deg auto"
+        max-camera-orbit="infinity 90deg auto"
         interpolation-decay="200"
         disable-pan
         disable-tap
@@ -82,8 +82,7 @@
         const modelViewer = document.querySelector('#viewer');
         const progressBar = document.querySelector('#progress-bar');
         
-        // Match the 100% radius so auto-reset maintains tight framing
-        const defaultOrbit = "0deg 75deg 100%";
+        let defaultOrbit = "0deg 75deg auto";
         const RESET_DELAY_MS = 1000; 
 
         let resetTimer = null;
@@ -91,6 +90,18 @@
         let startX = 0;
         let startY = 0;
 
+        // Force model auto-fit & framing when loading completes
+        modelViewer.addEventListener('load', () => {
+            // Re-calculate the camera bounding box distance automatically
+            if (typeof modelViewer.updateFraming === 'function') {
+                modelViewer.updateFraming();
+            }
+            
+            // Save the newly calculated framing orbit as the default reset target
+            defaultOrbit = modelViewer.getCameraOrbit().toString();
+        });
+
+        // Loading Progress Bar
         modelViewer.addEventListener('progress', (e) => {
             const progress = e.detail.totalProgress * 100;
             progressBar.style.width = `${progress}%`;
@@ -99,6 +110,7 @@
             }
         });
 
+        // Interaction state handling
         modelViewer.addEventListener('pointerdown', (e) => {
             isInteracting = true;
             startX = e.clientX;
