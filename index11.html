@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Model Viewer - 30/60 Isometric View</title>
+    <title>3D Model Viewer</title>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
     <style>
         body, html { 
@@ -31,7 +31,7 @@
 
     <model-viewer 
         id="viewer"
-        src="cube11.glb" 
+        src="cube11.glb"
         camera-controls 
         touch-action="pan-y" 
         shadow-intensity="1"
@@ -40,11 +40,11 @@
         auto-rotate-delay="0"
         rotation-per-second="15deg"
         
-        <!-- Updated camera orbit to 30deg yaw, 60deg pitch -->
-        camera-orbit="30deg 60deg auto"
+        /* Starting camera position */
+        camera-orbit="0deg 75deg auto"
         
-        <!-- Pitch constraints keeping the user within 30deg to 90deg -->
-        min-camera-orbit="-infinity 30deg auto"
+        /* Pitch limits */
+        min-camera-orbit="-infinity 45deg auto"
         max-camera-orbit="infinity 90deg auto"
         
         disable-zoom>
@@ -52,28 +52,30 @@
 
     <script>
         const modelViewer = document.querySelector('#viewer');
-        // Updated default reset orbit
-        const defaultOrbit = "30deg 60deg auto";
+        const defaultOrbit = "0deg 75deg auto";
         let resetTimer = null;
 
         function handleUserRelease() {
+            // Clear any pending reset if the user drags again
             clearTimeout(resetTimer);
 
+            // Wait 2.5 seconds after user releases touch/mouse
             resetTimer = setTimeout(() => {
-                // Pause auto-rotate to allow camera override
+                // 1. Pause auto-rotate so it releases control of the camera
                 modelViewer.removeAttribute('auto-rotate');
 
-                // Return camera to 30deg 60deg position
+                // 2. Set the camera back to your target orbit
                 modelViewer.cameraOrbit = defaultOrbit;
 
-                // Resume auto-rotate after transition completes
+                // 3. Re-enable auto-rotate after the transition completes (~800ms)
                 setTimeout(() => {
                     modelViewer.setAttribute('auto-rotate', '');
                 }, 800);
 
-            }, 2500);
+            }, 2500); // Delay before returning to default position
         }
 
+        // Detect when user stops interacting
         modelViewer.addEventListener('pointerup', handleUserRelease);
         modelViewer.addEventListener('touchend', handleUserRelease);
     </script>
