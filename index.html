@@ -20,11 +20,11 @@
             --background-color: transparent; 
             background-color: transparent;
 
-            /* 1. FORCE HIDE THE HAND PROMPT VIA CSS */
+            /* Hide hand prompt via CSS variables */
             --interaction-prompt-display: none;
         }
 
-        /* 2. DIRECT TARGET TO OBLITERATE THE HAND ICON SLOT */
+        /* Direct shadow DOM target to strip interaction prompt */
         model-viewer::part(interaction-prompt) {
             display: none !important;
         }
@@ -37,17 +37,12 @@
         camera-controls 
         touch-action="pan-y" 
         shadow-intensity="1"
-        
-        /* Disable prompt at the component level */
         interaction-prompt="none"
-        interaction-prompt-style="none"
-        
-        /* Rotation & Limits */
         auto-rotate 
         auto-rotate-delay="0"
         rotation-per-second="15deg"
-        min-camera-orbit="auto 90deg auto"
-        max-camera-orbit="auto 90deg auto"
+        min-camera-orbit="-infinity 45deg auto"
+        max-camera-orbit="infinity 90deg auto"
         disable-zoom>
     </model-viewer>
 
