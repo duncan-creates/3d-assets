@@ -19,12 +19,9 @@
             height: 100%; 
             --background-color: transparent; 
             background-color: transparent;
-
-            /* Hide hand prompt via CSS variables */
             --interaction-prompt-display: none;
         }
 
-        /* Direct shadow DOM target to strip interaction prompt */
         model-viewer::part(interaction-prompt) {
             display: none !important;
         }
@@ -33,6 +30,7 @@
 <body>
 
     <model-viewer 
+        id="viewer"
         src="https://duncan-creates.github.io/3d-assets/cube01.glb" 
         camera-controls 
         touch-action="pan-y" 
@@ -41,10 +39,37 @@
         auto-rotate 
         auto-rotate-delay="0"
         rotation-per-second="15deg"
+        
+        /* DEFAULT CAMERA ANGLE: (Azimuth/Yaw, Pitch, Distance) */
+        camera-orbit="0deg 75deg auto"
+        
+        /* Pitch boundaries */
         min-camera-orbit="-infinity 45deg auto"
         max-camera-orbit="infinity 90deg auto"
-        disable-zoom>
+        
+        disable-zoom
+        interpolation-decay="200">
     </model-viewer>
+
+    <script>
+        const modelViewer = document.querySelector('#viewer');
+        const defaultOrbit = "0deg 75deg auto"; // Change this to your preferred default angle
+        let userInteractionTimer = null;
+
+        // Listen for when the user starts interacting
+        modelViewer.addEventListener('camera-change', (event) => {
+            if (event.detail.source === 'user-interaction') {
+                // Clear any running timer while the user is actively dragging
+                clearTimeout(userInteractionTimer);
+
+                // Set a 2.5-second delay after the user stops dragging
+                userInteractionTimer = setTimeout(() => {
+                    // Smoothly animate the camera back to the default orbit angle
+                    modelViewer.cameraOrbit = defaultOrbit;
+                }, 2500); // Time in milliseconds before returning to default
+            }
+        });
+    </script>
 
 </body>
 </html>
