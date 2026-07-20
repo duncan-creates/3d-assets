@@ -40,35 +40,41 @@
         auto-rotate-delay="0"
         rotation-per-second="15deg"
         
-        /* DEFAULT CAMERA ANGLE: (Azimuth/Yaw, Pitch, Distance) */
+        /* DEFAULT CAMERA ANGLE */
         camera-orbit="0deg 75deg auto"
         
-        /* Pitch boundaries */
+        /* Pitch limits (allows viewing top without going full 90 degrees overhead) */
         min-camera-orbit="-infinity 45deg auto"
         max-camera-orbit="infinity 90deg auto"
         
-        disable-zoom
-        interpolation-decay="200">
+        disable-zoom>
     </model-viewer>
 
     <script>
-        const modelViewer = document.querySelector('#viewer');
-        const defaultOrbit = "0deg 75deg auto"; // Change this to your preferred default angle
-        let userInteractionTimer = null;
+const modelViewer = document.querySelector('#viewer');
+    const defaultOrbit = "0deg 75deg auto";
+    let interactionTimer = null;
 
-        // Listen for when the user starts interacting
-        modelViewer.addEventListener('camera-change', (event) => {
-            if (event.detail.source === 'user-interaction') {
-                // Clear any running timer while the user is actively dragging
-                clearTimeout(userInteractionTimer);
+    // Function to execute the camera reset
+    function scheduleCameraReset() {
+        // Clear any previous timer if user drags again
+        clearTimeout(interactionTimer);
 
-                // Set a 2.5-second delay after the user stops dragging
-                userInteractionTimer = setTimeout(() => {
-                    // Smoothly animate the camera back to the default orbit angle
-                    modelViewer.cameraOrbit = defaultOrbit;
-                }, 2500); // Time in milliseconds before returning to default
+        // Wait 2.5 seconds after user releases touch/mouse
+        interactionTimer = setTimeout(() => {
+            // 1. Reset the turntable back to 0 degrees
+            if (typeof modelViewer.resetTurntableRotation === 'function') {
+                modelViewer.resetTurntableRotation();
             }
-        });
+            
+            // 2. Animate the camera orbit back to the default pitch and position
+            modelViewer.cameraOrbit = defaultOrbit;
+        }, 2500); 
+    }
+
+    // Listen for mouse/touch releases on the viewer
+    modelViewer.addEventListener('pointerup', scheduleCameraReset);
+    modelViewer.addEventListener('touchend', scheduleCameraReset);
     </script>
 
 </body>
