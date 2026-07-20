@@ -6,38 +6,48 @@
     <title>3D Model Viewer</title>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: transparent; }
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; 
+            background: transparent; 
+        }
         model-viewer { 
             width: 100%; 
             height: 100%; 
-            /* Makes the viewer background completely transparent */
             --background-color: transparent; 
             background-color: transparent;
+
+            /* 1. FORCE HIDE THE HAND PROMPT VIA CSS */
+            --interaction-prompt-display: none;
+        }
+
+        /* 2. DIRECT TARGET TO OBLITERATE THE HAND ICON SLOT */
+        model-viewer::part(interaction-prompt) {
+            display: none !important;
         }
     </style>
 </head>
 <body>
 
-    <!-- Swap out the src URL with your actual GitHub Pages GLB URL -->
     <model-viewer 
         src="https://duncan-creates.github.io/3d-assets/cube01.glb" 
         camera-controls 
         touch-action="pan-y" 
         shadow-intensity="1"
         
-        /* Disables the hand icon gesture hint */
-    interaction-prompt="none"
+        /* Disable prompt at the component level */
+        interaction-prompt="none"
+        interaction-prompt-style="none"
         
-        /* 1. Idle Rotation Settings */
+        /* Rotation & Limits */
         auto-rotate 
         auto-rotate-delay="0"
         rotation-per-second="15deg"
-        
-        /* 2. Restrict to Horizontal (Orbit) Rotation Only */
-        min-camera-orbit="auto auto auto"
-        max-camera-orbit="auto auto auto"
-        
-        /* 3. Disable Zooming (Optional but recommended for a cleaner card look) */
+        min-camera-orbit="auto 90deg auto"
+        max-camera-orbit="auto 90deg auto"
         disable-zoom>
     </model-viewer>
 
