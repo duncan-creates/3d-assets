@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Model Viewer - Isometric View</title>
+    <title>3D Model Viewer - 30/60 Isometric View</title>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
     <style>
         body, html { 
@@ -40,10 +40,10 @@
         auto-rotate-delay="0"
         rotation-per-second="15deg"
         
-        <!-- Isometric default camera angle -->
-        camera-orbit="45deg 55deg auto"
+        <!-- Updated camera orbit to 30deg yaw, 60deg pitch -->
+        camera-orbit="30deg 60deg auto"
         
-        <!-- Pitch constraints around isometric angle -->
+        <!-- Pitch constraints keeping the user within 30deg to 90deg -->
         min-camera-orbit="-infinity 30deg auto"
         max-camera-orbit="infinity 90deg auto"
         
@@ -52,8 +52,8 @@
 
     <script>
         const modelViewer = document.querySelector('#viewer');
-        // Matches the isometric camera-orbit above
-        const defaultOrbit = "45deg 55deg auto";
+        // Updated default reset orbit
+        const defaultOrbit = "30deg 60deg auto";
         let resetTimer = null;
 
         function handleUserRelease() {
@@ -63,7 +63,7 @@
                 // Pause auto-rotate to allow camera override
                 modelViewer.removeAttribute('auto-rotate');
 
-                // Return camera to isometric position
+                // Return camera to 30deg 60deg position
                 modelViewer.cameraOrbit = defaultOrbit;
 
                 // Resume auto-rotate after transition completes
