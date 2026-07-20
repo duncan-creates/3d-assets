@@ -34,14 +34,9 @@
         src="cube11.glb"
         camera-controls 
         touch-action="pan-y" 
-        
-        <!-- --- LIGHTING & ENVIRONMENT SETTINGS --- -->
-        environment-image="legacy" 
-        exposure="1.2"
-        shadow-intensity="1.5"
-        shadow-softness="0.8"
-        tone-mapping="neutral"
-        
+        shadow-intensity="1"
+        exposure="1"
+        environment-image="neutral"
         interaction-prompt="none"
         auto-rotate 
         auto-rotate-delay="0"
@@ -78,11 +73,12 @@
         // Intercept clicks before <model-viewer> reads them
         modelViewer.addEventListener('click', (e) => {
             const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
+            // If mouse moved less than 5px (a click, not a drag), block the event entirely
             if (dist < 5) {
                 e.stopPropagation();
                 e.preventDefault();
             }
-        }, true);
+        }, true); // 'true' uses capture mode to stop the event early
 
         // Trigger 1-second countdown when user releases from dragging
         function handleUserRelease() {
@@ -91,7 +87,9 @@
 
             resetTimer = setTimeout(() => {
                 if (isInteracting) return;
+
                 modelViewer.cameraOrbit = defaultOrbit;
+
             }, RESET_DELAY_MS);
         }
 
