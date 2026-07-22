@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Model Viewer</title>
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+    <style>
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; 
+            background: transparent; 
+        }
+        model-viewer { 
+            width: 100%; 
+            height: 100%; 
+            --background-color: transparent; 
+            background-color: transparent;
+            --interaction-prompt-display: none;
+        }
+
+        model-viewer::part(interaction-prompt) {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <model-viewer 
+        id="viewer"
+        src="model13.glb"
+        camera-controls 
+        touch-action="pan-y" 
+        shadow-intensity="1"
+        exposure="1"
+        environment-image="neutral"
+        interaction-prompt="none"
+        auto-rotate 
+        auto-rotate-delay="0"
+        rotation-per-second="15deg"
+        camera-orbit="0deg 75deg auto"
+        camera-target="auto auto auto"
+        min-camera-orbit="-infinity 45deg auto"
+        max-camera-orbit="infinity 90deg auto"
+        interpolation-decay="200"
+        disable-pan
+        disable-tap
+        disable-zoom>
+    </model-viewer>
+
+    <script>
+        const modelViewer = document.querySelector('#viewer');
+        const defaultOrbit = "0deg 75deg auto";
+        
+        const RESET_DELAY_MS = 1000; 
+
+        let resetTimer = null;
+        let isInteracting = false;
+        let startX = 0;
+        let startY = 0;
+
+        // Prevent static clicks/taps from refocusing or shifting the camera target
+        modelViewer.addEventListener('pointerdown', (e) => {
+            isInteracting = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            clearTimeout(resetTimer);
+        });
+
+        // Intercept clicks before <model-viewer> reads them
+        modelViewer.addEventListener('click', (e) => {
+            const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
+            // If mouse moved less than 5px (a click, not a drag), block the event entirely
+            if (dist < 5) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+        }, true); // 'true' uses capture mode to stop the event early
+
+        // Trigger 1-second countdown when user releases from dragging
+        function handleUserRelease() {
+            isInteracting = false;
+            clearTimeout(resetTimer);
+
+            resetTimer = setTimeout(() => {
+                if (isInteracting) return;
+
+                modelViewer.cameraOrbit = defaultOrbit;
+
+            }, RESET_DELAY_MS);
+        }
+
+        modelViewer.addEventListener('pointerup', handleUserRelease);
+        modelViewer.addEventListener('touchend', handleUserRelease);
+    </script>
+
+</body>
+</html>
